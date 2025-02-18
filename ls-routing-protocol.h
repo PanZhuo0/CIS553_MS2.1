@@ -273,7 +273,7 @@ private:
   // ### NEW INTEFEACE WAIT FOR IMPLEMENT
   void FloodLSA(const LSMessage & lsaMessage);
   void ProcessLSA(const LSMessage & lsaMessage);
-  void RUnDijkstra();
+  void RunDijkstra();
 
 
   //### BELOW have not changed

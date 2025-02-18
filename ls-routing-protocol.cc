@@ -28,6 +28,7 @@
 #include "ns3/udp-socket-factory.h"
 #include "ns3/uinteger.h"
 #include <ctime>
+#include <queue>
 
 using namespace ns3;
 
@@ -468,12 +469,13 @@ void LSRoutingProtocol::RecvLSMessage(Ptr<Socket> socket)
 void LSRoutingProtocol::ProcessLSA(const LSMessage & lsaMessage){
 	//### use lsaMessage 's GetLSA method
 	LSMessage::LSAInfo lsa =  lsaMessage.GetLSA();
+	uint32_t originNode = lsa.originNode;
 	// ### check whether this LSA have been process 
 	// ### 1. not in LSA database or 2. Seq > lsa.orignalNode
 	if(m_lsDatabase.find(lsa.originNode) == m_lsDatabase.end() || lsa.sequenceNumber > m_lsDatabase[lsa.originNode].sequenceNumber){
 		// ### what should we do here?
 		m_lsDatabase[originNode]=lsa;  // add to LSA database
-		FloodLSA(lsMessage); // FLOOD new NODE info
+		FloodLSA(lsaMessage); // FLOOD new NODE info
 		RunDijkstra(); // re calculate route
 		printf("not in LSADB")	;
 	}
@@ -482,7 +484,7 @@ void LSRoutingProtocol::ProcessLSA(const LSMessage & lsaMessage){
 // ### FLOODLSA
 void LSRoutingProtocol::FloodLSA(const LSMessage& lsaMessage){
 	LSMessage newLsa = lsaMessage;
-	newLsa.SetTTL(newLsa.GetTTl() - 1);  //TTL -=1
+	newLsa.SetTTL(newLsa.GetTTL() - 1);  //TTL -=1
 
 	//if TTL is valid
 	if(newLsa.GetTTL()> 0){
@@ -509,7 +511,7 @@ void LSRoutingProtocol::RunDijkstra(){
 	// ### prior queue 
 	// ?????????????
 	auto cmp = [&dist](uint32_t a, uint32_t b) { return dist[a] > dist[b]; };
-	std::priority_queue<uint32_t, std::vector<uint32_t>, decltype(cmp)> queue(cmp);
+	std::priority_queue<uint32_t,std::vector<uint32_t>, decltype(cmp)>queue(cmp);
 	queue.push(currentNode);
 	// ?????????????
 
