@@ -2,8 +2,11 @@
 
 快速到达目录
 > cd my_project1_repo/
+> 
 > docker-compose build cis553
+> 
 > sudo  docker-compose run --rm cis553
+> 
 > cd Sp25-cis553-Project1-Group14/
 
 测试
