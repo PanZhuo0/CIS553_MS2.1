@@ -267,21 +267,27 @@ bool LSRoutingProtocol::RouteInput(Ptr<const Packet> packet, const Ipv4Header &h
   return false;
 }
 
+// pakc
 void LSRoutingProtocol::BroadcastPacket(Ptr<Packet> packet)
 {
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::const_iterator i = m_socketAddresses.begin();
        i != m_socketAddresses.end(); i++)
   {
-    Ptr<Packet> pkt = packet->Copy();
+    Ptr<Packet> pkt = packet->Copy();  // Inpute Ptr<Packet> parameter
     Ipv4Address broadcastAddr = i->second.GetLocal().GetSubnetDirectedBroadcast(i->second.GetMask());
     i->first->SendTo(pkt, 0, InetSocketAddress(broadcastAddr, LS_PORT_NUMBER));
   }
 }
 
+//process CMD 
+//LINK UP 6
+//
 void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
 {
+	//
   std::vector<std::string>::iterator iterator = tokens.begin();
   std::string command = *iterator;
+
   if (command == "PING")
   {
     if (tokens.size() < 3)
@@ -311,8 +317,10 @@ void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
       BroadcastPacket(packet);
     }
   }
+
   else if (command == "DUMP")
   {
+	NS_LOG_INFO("try to ues DUMP_XXX command");
     if (tokens.size() < 2)
     {
       ERROR_LOG("Insufficient Parameters!");
@@ -333,6 +341,11 @@ void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
       DumpLSA();
     }
   }
+
+  else if(command == "LINK")
+  {
+	  NS_LOG_INFO("LINK using !!");
+  }
 }
 
 void LSRoutingProtocol::DumpLSA()
@@ -345,24 +358,35 @@ void LSRoutingProtocol::DumpLSA()
 
 void LSRoutingProtocol::DumpNeighbors()
 {
+  std::cout << "dumping neighbor list !!!";
   STATUS_LOG(std::endl
              << "**************** Neighbor List ********************" << std::endl
              << "NeighborNumber\t\tNeighborAddr\t\tInterfaceAddr");
-  PRINT_LOG("");
 
   /* NOTE: For purpose of autograding, you should invoke the following function for each
   neighbor table entry. The output format is indicated by parameter name and type.
   */
-  //  checkNeighborTableEntry();
+  
+  PRINT_LOG((m_routingTable.size()));
+  //Detail of neighbors
+  for (auto& entry : m_neighbors){
+	  // m_neighbors Map<IP,Neighbor>
+	  // Neighbor: ==> [IP,interface Addres ID,TIme lastHello]
+  //each neighbor talbe entry should invoke this function ==> checkNeighborTableEntry();
+  //<< "NeighborNumber\t\tNeighborAddr\t\tInterfaceAddr");
+  	//checkNeighborTableEntry(entry);
+	  std::cout << entry.first;
+  } 
 }
 
-void LSRoutingProtocol::DumpRoutingTable()
-{
+void LSRoutingProtocol::DumpRoutingTable() {
+
+	std::cout << "dumping route table" << "\t";
+
 	//############ 	we  edit
 	 STATUS_LOG("\n**************** Route Table ********************");
 	 for (auto& entry : m_routingTable) {
 		 uint32_t destNode = entry.first;
-
 		 RouteEntry route = entry.second;
 
 		 Ipv4Address destAddr = ResolveNodeIpAddress(destNode);
@@ -603,10 +627,11 @@ void LSRoutingProtocol::ProcessPingRsp(LSMessage lsMessage)
   }
 }
 
+// Chcck whether Input IP is one IP of this Node 
 bool LSRoutingProtocol::IsOwnAddress(Ipv4Address originatorAddress)
 {
   // Check all interfaces
-  for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::const_iterator i = m_socketAddresses.begin();
+  for (std::map<  Ptr<Socket>,  Ipv4InterfaceAddress> :: const_iterator i = m_socketAddresses.begin();
        i != m_socketAddresses.end(); i++)
   {
     Ipv4InterfaceAddress interfaceAddr = i->second;

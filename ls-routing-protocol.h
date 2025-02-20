@@ -92,10 +92,14 @@ public:
   void ProcessPingReq(LSMessage lsMessage);
   void ProcessPingRsp(LSMessage lsMessage);
 
-  //###ADD 
+  //### Edit : we defined
   void ProcessHelloReq(LSMessage lsMessage); // ### process helo request wait for implement
   void ProcessHelloRsp(LSMessage lsMessage,Ipv4Address interface); // ### process hello response wait for implement
   void SendPeriodicHello(); // SEND HELLO periodc 
+  //for autograding
+  // void checkNeighborTableEntry(); // for Dump neighbors 
+ // void checkNeighborTableEntry(); // for Dump routing table
+
 
   // Periodic Audit
   void AuditPings();
@@ -249,6 +253,7 @@ protected:
 private:
   // ### ADD some necessary parameter for LS protocol implement
   std::map<uint32_t,LSMessage::LSAInfo> m_lsDatabase;  // ### Store lot of LS data  [a MAP]
+
   struct RouteEntry{ // ###  RouteEntry : store target NODE  -> next pop and COST  
 		//ROUTETALBE 's  entry
 	  uint32_t nextHopNode; // nextHopNode WHY INT?
