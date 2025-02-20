@@ -248,8 +248,7 @@ LSMessage::SetPingReq (Ipv4Address destinationAddress, std::string pingMessage)
   m_message.pingReq.pingMessage = pingMessage;
 }
 
-LSMessage::PingReq
-LSMessage::GetPingReq ()
+LSMessage::PingReq LSMessage::GetPingReq ()
 {
   return m_message.pingReq;
 }

@@ -30,23 +30,25 @@ using namespace ns3;
 class LSMessage : public Header
 {
   public:
+
     LSMessage();
+
     virtual ~LSMessage();
 
     // TODO: Define extra message types in enum when needed
     enum MessageType
       {
-      PING_REQ,
-      PING_RSP,
-	//### ADD LSA
-      LSA 
+	      PING_REQ,
+	      PING_RSP,
+	      LSA   // LSA MSG TYPE used to implement LS algorihm
       };
 
-    //### ADD LSA INFO struct => in LSMESSAGE CLASS
+    LSMessage(LSMessage::MessageType messageType, uint32_t sequenceNumber, uint8_t ttl, Ipv4Address originatorAddress);
+    //LSAInfo MSG structure
     struct LSAInfo{
 	    uint32_t originNode; //### int32 NODE
 	    uint32_t sequenceNumber; // ### int32 Seq
-	    //### neighbors node and cost MAP 
+	    //### along with LS node self's neighbors node and cost MAP 
 	    std::map<uint32_t,uint32_t> neighbors;
 
 
@@ -57,7 +59,6 @@ class LSMessage : public Header
 	    uint32_t Deserialize(Buffer::Iterator& start); // Deserilize
     };
 
-    LSMessage(LSMessage::MessageType messageType, uint32_t sequenceNumber, uint8_t ttl, Ipv4Address originatorAddress);
 
     /**
      *  \brief Sets message type
@@ -86,7 +87,6 @@ class LSMessage : public Header
      *  \param originatorAddress Originator IPV4 address
      */
     void SetOriginatorAddress(Ipv4Address originatorAddress);
-
     /**
      *  \returns Originator IPV4 address
      */
@@ -107,22 +107,23 @@ class LSMessage : public Header
     /**
      *  \cond
      */
-    MessageType m_messageType;
-    uint32_t m_sequenceNumber;
-    Ipv4Address m_originatorAddress;
-    uint8_t m_ttl;
+    MessageType m_messageType; // lsmsg.m_messageType 
+    uint32_t m_sequenceNumber; // lsmsg.m_sequenceNumber
+    Ipv4Address m_originatorAddress; // lsmsg.m_originatorAddress 
+    uint8_t m_ttl; // lsmsg.m_ttl
     /**
      *  \endcond
      */
   public:
     static TypeId GetTypeId(void);
     virtual TypeId GetInstanceTypeId(void) const;
+
     void Print(std::ostream& os) const;
     uint32_t GetSerializedSize(void) const;
     void Serialize(Buffer::Iterator start) const;
     uint32_t Deserialize(Buffer::Iterator start);
 
-    struct PingReq
+    struct PingReq // LSMessage::PingReq 
       {
       void Print(std::ostream& os) const;
       uint32_t GetSerializedSize(void) const;
@@ -131,10 +132,10 @@ class LSMessage : public Header
       // Payload
       Ipv4Address destinationAddress;
       std::string pingMessage;
-      };
+     };
 
-    struct PingRsp
-      {
+    struct PingRsp // LSMessage::PingRes
+     {
       void Print(std::ostream& os) const;
       uint32_t GetSerializedSize(void) const;
       void Serialize(Buffer::Iterator& start) const;
@@ -142,16 +143,16 @@ class LSMessage : public Header
       // Payload
       Ipv4Address destinationAddress;
       std::string pingMessage;
-      };
+     };
 
   private:
     struct
-      {
+     {
       PingReq pingReq;
       PingRsp pingRsp;
-      //### add LSA zidaun???
       LSAInfo lsa;
-      } m_message;
+     } m_message;
+
 
   public:
     //### add LSA operate method
