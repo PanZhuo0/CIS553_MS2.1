@@ -14,12 +14,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "ns3/internet-module.h"
 #include "ns3/ls-routing-protocol.h"
 #include "ns3/double.h"
 #include "ns3/inet-socket-address.h"
 #include "ns3/ipv4-header.h"
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/ipv4-route.h"
+#include "ns3/ipv4.h"
 #include "ns3/log.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/simulator.h"
@@ -52,6 +54,8 @@ LSRoutingProtocol::GetTypeId(void)
                                         MakeUintegerAccessor(&LSRoutingProtocol::m_lsPort), MakeUintegerChecker<uint16_t>())
                           .AddAttribute("PingTimeout", "Timeout value for PING_REQ in milliseconds", TimeValue(MilliSeconds(2000)),
                                         MakeTimeAccessor(&LSRoutingProtocol::m_pingTimeout), MakeTimeChecker())
+                          .AddAttribute("HRTimeout", "Timeout value for Hello_Request in milliseconds", TimeValue(MilliSeconds(5000)), // 5s for neighbor search
+                                        MakeTimeAccessor(&LSRoutingProtocol::m_HRTimeout), MakeTimeChecker())
                           .AddAttribute("MaxTTL", "Maximum TTL value for LS packets", UintegerValue(16),
                                         MakeUintegerAccessor(&LSRoutingProtocol::m_maxTTL), MakeUintegerChecker<uint8_t>());
   return tid;
@@ -63,10 +67,11 @@ LSRoutingProtocol::GetTypeId(void)
 //	std::cout << "we need to finish RECVLSMESSAGE LOGIC"
 //}
 
-LSRoutingProtocol::LSRoutingProtocol()
-    : m_auditPingsTimer(Timer::CANCEL_ON_DESTROY)
+LSRoutingProtocol::LSRoutingProtocol() 
+: m_auditPingsTimer(Timer::CANCEL_ON_DESTROY),
+m_HRTimer(Timer::CANCEL_ON_DESTROY)
 {
-
+  LogComponentEnable("LSRoutingProtocol",LOG_LEVEL_DEBUG);
   m_currentSequenceNumber = 0;
   // Setup static routing
   m_staticRouting = Create<Ipv4StaticRouting>();
@@ -95,8 +100,9 @@ void LSRoutingProtocol::DoDispose()
 
   // Cancel timers
   m_auditPingsTimer.Cancel();
-  m_pingTracker.clear();
+  m_HRTimer.Cancel();
 
+  m_pingTracker.clear();
   PennRoutingProtocol::DoDispose();
 }
 
@@ -143,8 +149,7 @@ LSRoutingProtocol::ReverseLookup(Ipv4Address ipAddress)
 void LSRoutingProtocol::DoInitialize()
 {
 
-  if (m_mainAddress == Ipv4Address())
-  {
+  if (m_mainAddress == Ipv4Address()){ // if m_mainAddres = 0.0.0.0
     Ipv4Address loopback("127.0.0.1");
     for (uint32_t i = 0; i < m_ipv4->GetNInterfaces(); i++)
     {
@@ -284,7 +289,6 @@ void LSRoutingProtocol::BroadcastPacket(Ptr<Packet> packet)
 //
 void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
 {
-	//
   std::vector<std::string>::iterator iterator = tokens.begin();
   std::string command = *iterator;
 
@@ -302,6 +306,7 @@ void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
     iterator++;
     std::string pingMessage = *iterator;
     Ipv4Address destAddress = ResolveNodeIpAddress(nodeNumber);
+    DEBUG_LOG("Here!");
     if (destAddress != Ipv4Address::GetAny())
     {
       uint32_t sequenceNumber = GetNextSequenceNumber();
@@ -320,7 +325,7 @@ void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
 
   else if (command == "DUMP")
   {
-	NS_LOG_INFO("try to ues DUMP_XXX command");
+NS_LOG_INFO("[INFO]: Dump Command executing!");
     if (tokens.size() < 2)
     {
       ERROR_LOG("Insufficient Parameters!");
@@ -358,7 +363,6 @@ void LSRoutingProtocol::DumpLSA()
 
 void LSRoutingProtocol::DumpNeighbors()
 {
-  std::cout << "dumping neighbor list !!!";
   STATUS_LOG(std::endl
              << "**************** Neighbor List ********************" << std::endl
              << "NeighborNumber\t\tNeighborAddr\t\tInterfaceAddr");
@@ -367,15 +371,27 @@ void LSRoutingProtocol::DumpNeighbors()
   neighbor table entry. The output format is indicated by parameter name and type.
   */
   
-  PRINT_LOG((m_routingTable.size()));
+  PRINT_LOG((m_neighbors.size())); 
   //Detail of neighbors
+  std::cout << "dumping neighbor list !!!";
+  PRINT_LOG("pesudo DATA");
+  Ipv4Address a("192.168.1.1");
+  Ipv4Address b("192.168.1.2");
+  Ipv4Address c("192.168.1.3");
+  Neighbor n; 
+  n.node = 12;
+  n.address = a;
+  n.interfaceAddress=b;
+  m_neighbors[a]=n;
   for (auto& entry : m_neighbors){
-	  // m_neighbors Map<IP,Neighbor>
-	  // Neighbor: ==> [IP,interface Addres ID,TIme lastHello]
+  // m_neighbors Map<IP,Neighbor>
+  // Neighbor: ==> [IP,interface Addres ID,TIme lastHello]
   //each neighbor talbe entry should invoke this function ==> checkNeighborTableEntry();
   //<< "NeighborNumber\t\tNeighborAddr\t\tInterfaceAddr");
+	std::cout<<"123";
+	std::cout<< entry.first;
+	//std::cout<< n;
   	//checkNeighborTableEntry(entry);
-	  std::cout << entry.first;
   } 
 }
 
@@ -416,24 +432,32 @@ routing table entry. The output format is indicated by parameter name and type.
 }
 
 
+// Receive LSMessage and process
 void LSRoutingProtocol::RecvLSMessage(Ptr<Socket> socket)
 {
-  Address sourceAddr;
-  Ptr<Packet> packet = socket->RecvFrom(sourceAddr);
+  Address sourceAddr; 
+
+  Ptr<Packet> packet = socket->RecvFrom(sourceAddr); // sourceAddr will be assign value by Callback function
+
   LSMessage lsMessage;
+
   Ipv4PacketInfoTag interfaceInfo;
-  if (!packet->RemovePacketTag(interfaceInfo))
+
+  if (!packet->RemovePacketTag(interfaceInfo)) 
   {
     NS_ABORT_MSG("No incoming interface on OLSR message, aborting.");
   }
-  uint32_t incomingIf = interfaceInfo.GetRecvIf();
+  uint32_t incomingIf = interfaceInfo.GetRecvIf(); // Income Interface 
 
-  if (!packet->RemoveHeader(lsMessage))
+  if (!packet->RemoveHeader(lsMessage)) // Remove packet header and analyze
   {
     NS_ABORT_MSG("No incoming interface on LS message, aborting.");
   }
 
-  Ipv4Address interface;
+  
+  Ipv4Address interface; // the IP of receive interface on device
+  Ipv4Address sourceIpv4Addr= lsMessage.GetSource(); // lsMsg is a Header ==> Header::GetSource();
+
   uint32_t idx = 1;
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::iterator iter = m_socketAddresses.begin();
        iter != m_socketAddresses.end(); iter++)
@@ -456,37 +480,33 @@ void LSRoutingProtocol::RecvLSMessage(Ptr<Socket> socket)
     ProcessPingRsp(lsMessage);
     break;
 
+  case LSMessage::HR:
+    ProcessHR(lsMessage,sourceIpv4Addr,interface); // Params: LSMsg , originAddress,interfaceAddress
+    break;
 
-
-
-
-
-
-
-
-
-
-    //### update RECVLSMESSAGE 
+    //code add
   case LSMessage::LSA:
-    //### if message is LSA 
-    ProcessLSA(lsMessage); // ### ProcessLSA logic , wait for implement
-    //printf("wait to implement PROCESSLSA METHOD LOGIC"); 
+    ProcessLSA(lsMessage); 
     break; 
-
-
-
-
-
-
-
-
-
-
 
   default:
     ERROR_LOG("Unknown Message Type!");
     break;
   }
+}
+
+//Edit: ProcessHR, receive 
+void LSRoutingProtocol::ProcessHR(const LSMessage& lsaMsg,Ipv4Address originAddress,Ipv4Address interfaceAddress){
+	//1. get HR info
+	LSMessage::HRInfo hr = lsaMsg.GetHR();
+
+	// new a Neighbor object and assign val
+	Neighbor neighbor;
+	neighbor.node = hr.originNode;
+	neighbor.address= originAddress;
+	neighbor.interfaceAddress = interfaceAddress; // how to get the into IP of LS
+	// add neighbor to m_neighbors Map
+	m_neighbors[originAddress]=neighbor; // Map<IP,Neighbor> IP:originAddress  Neighbor:this neighbor obj
 }
 
 // ### LETS SET PROCESSLSA  function HERE 
@@ -590,8 +610,10 @@ void LSRoutingProtocol::RunDijkstra(){
 void LSRoutingProtocol::ProcessPingReq(LSMessage lsMessage)
 {
   // Check destination address
+  std::cout << lsMessage;
   if (IsOwnAddress(lsMessage.GetPingReq().destinationAddress))
   {
+	  std::cout << "here";
     // Use reverse lookup for ease of debug
     std::string fromNode = ReverseLookup(lsMessage.GetOriginatorAddress());
     TRAFFIC_LOG("Received PING_REQ, From Node: " << fromNode
@@ -643,6 +665,13 @@ bool LSRoutingProtocol::IsOwnAddress(Ipv4Address originatorAddress)
   return false;
 }
 
+//hello request function 
+void LSRoutingProtocol::HRFunc(){
+ //1. broadcast a MSG  with TTL = 1 
+ //2. Recevice Response 
+  PRINT_LOG("HR timre working!");
+  m_HRTimer.Schedule(m_HRTimeout);
+}
 void LSRoutingProtocol::AuditPings()
 {
   std::map<uint32_t, Ptr<PingRequest>>::iterator iter;
@@ -697,6 +726,9 @@ void LSRoutingProtocol::SetIpv4(Ptr<Ipv4> ipv4)
   NS_LOG_DEBUG("Created ls::RoutingProtocol");
   // Configure timers
   m_auditPingsTimer.SetFunction(&LSRoutingProtocol::AuditPings, this);
+  m_HRTimer.SetFunction(&LSRoutingProtocol::HRFunc, this); // HRTimer 's callback function
+
+
   m_ipv4 = ipv4;
   m_staticRouting->SetIpv4(m_ipv4);
 }

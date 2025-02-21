@@ -17,9 +17,9 @@
 #ifndef LS_ROUTING_H
 #define LS_ROUTING_H
 
+#include "ns3/ipv4.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4-static-routing.h"
-#include "ns3/ipv4.h"
 #include "ns3/node.h"
 #include "ns3/object.h"
 #include "ns3/packet.h"
@@ -101,8 +101,11 @@ public:
  // void checkNeighborTableEntry(); // for Dump routing table
 
 
-  // Periodic Audit
+  // Periodic Audit // auditPingsTImer 's callback function
   void AuditPings();
+
+  // Periodic Ping Find Neighbors // HRTimer 's callback function
+  void HRFunc();
 
   // From Ipv4RoutingProtocol
 
@@ -263,9 +266,10 @@ private:
 
 
   struct Neighbor {
+    uint32_t node;
     Ipv4Address address;
     Ipv4Address interfaceAddress;
-    Time lastHello;
+    Timer lastHello;
   };
 
   std::map<Ipv4Address, Neighbor> m_neighbors;
@@ -274,6 +278,8 @@ private:
   // ### routeing table store routing info
   std::map<uint32_t,RouteEntry> m_routingTable;
 
+  // ### hello request
+  void ProcessHR(const LSMessage& lsaMsg,Ipv4Address originAddress,Ipv4Address interfaceAddress);
 
   // ### NEW INTEFEACE WAIT FOR IMPLEMENT
   void FloodLSA(const LSMessage & lsaMessage);
@@ -289,6 +295,7 @@ private:
   Ptr<Ipv4> m_ipv4;
 
   Time m_pingTimeout;
+  Time m_HRTimeout;
   uint8_t m_maxTTL;
   uint16_t m_lsPort;
   uint32_t m_currentSequenceNumber;
@@ -297,6 +304,7 @@ private:
 
   // Timers
   Timer m_auditPingsTimer;
+  Timer m_HRTimer;  // Hello requset timer;
 
   // Ping tracker
   std::map<uint32_t, Ptr<PingRequest>> m_pingTracker;

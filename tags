@@ -18,21 +18,27 @@ DumpLSA	ls-routing-protocol.cc	/^void LSRoutingProtocol::DumpLSA()$/;"	f	class:L
 DumpNeighbors	ls-routing-protocol.cc	/^void LSRoutingProtocol::DumpNeighbors()$/;"	f	class:LSRoutingProtocol
 DumpRoutingTable	ls-routing-protocol.cc	/^void LSRoutingProtocol::DumpRoutingTable() {$/;"	f	class:LSRoutingProtocol
 FloodLSA	ls-routing-protocol.cc	/^void LSRoutingProtocol::FloodLSA(const LSMessage& lsaMessage){$/;"	f	class:LSRoutingProtocol
+GetHR	ls-message.cc	/^LSMessage::HRInfo LSMessage::GetHR() const{$/;"	f	class:LSMessage
 GetInstanceTypeId	ls-message.cc	/^LSMessage::GetInstanceTypeId (void) const$/;"	f	class:LSMessage
 GetLSA	ls-message.cc	/^LSMessage::LSAInfo LSMessage::GetLSA() const{$/;"	f	class:LSMessage
 GetMessageType	ls-message.cc	/^LSMessage::GetMessageType () const$/;"	f	class:LSMessage
 GetNextSequenceNumber	ls-routing-protocol.cc	/^LSRoutingProtocol::GetNextSequenceNumber()$/;"	f	class:LSRoutingProtocol
 GetOriginatorAddress	ls-message.cc	/^LSMessage::GetOriginatorAddress (void) const$/;"	f	class:LSMessage
-GetPingReq	ls-message.cc	/^LSMessage::GetPingReq ()$/;"	f	class:LSMessage
+GetPingReq	ls-message.cc	/^LSMessage::PingReq LSMessage::GetPingReq ()$/;"	f	class:LSMessage
 GetPingRsp	ls-message.cc	/^LSMessage::GetPingRsp ()$/;"	f	class:LSMessage
 GetSequenceNumber	ls-message.cc	/^LSMessage::GetSequenceNumber (void) const$/;"	f	class:LSMessage
 GetSerializedSize	ls-message.cc	/^LSMessage::GetSerializedSize (void) const$/;"	f	class:LSMessage
 GetSerializedSize	ls-message.cc	/^LSMessage::PingReq::GetSerializedSize (void) const$/;"	f	class:LSMessage::PingReq
 GetSerializedSize	ls-message.cc	/^LSMessage::PingRsp::GetSerializedSize (void) const$/;"	f	class:LSMessage::PingRsp
+GetSerializedSize	ls-message.cc	/^uint32_t LSMessage::HRInfo::GetSerializedSize(void) const{$/;"	f	class:LSMessage::HRInfo
 GetSerializedSize	ls-message.cc	/^uint32_t LSMessage::LSAInfo::GetSerializedSize(void) const{$/;"	f	class:LSMessage::LSAInfo
+GetSource	ls-message.cc	/^Ipv4Address LSMessage::GetSource(){$/;"	f	class:LSMessage
 GetTTL	ls-message.cc	/^LSMessage::GetTTL (void) const$/;"	f	class:LSMessage
 GetTypeId	ls-message.cc	/^LSMessage::GetTypeId (void)$/;"	f	class:LSMessage
 GetTypeId	ls-routing-protocol.cc	/^LSRoutingProtocol::GetTypeId(void)$/;"	f	class:LSRoutingProtocol
+HR	ls-message.h	/^	      HR,$/;"	e	enum:LSMessage::MessageType
+HRFunc	ls-routing-protocol.cc	/^void LSRoutingProtocol::HRFunc(){$/;"	f	class:LSRoutingProtocol
+HRInfo	ls-message.h	/^    struct HRInfo{$/;"	s	class:LSMessage
 IPV4_ADDRESS_SIZE	ls-message.h	28;"	d
 IsOwnAddress	ls-routing-protocol.cc	/^bool LSRoutingProtocol::IsOwnAddress(Ipv4Address originatorAddress)$/;"	f	class:LSRoutingProtocol
 LSA	ls-message.h	/^	      LSA   \/\/ LSA MSG TYPE used to implement LS algorihm$/;"	e	enum:LSMessage::MessageType
@@ -44,12 +50,12 @@ LSMessage	ls-message.h	/^class LSMessage : public Header$/;"	c
 LSRoutingHelper	ls-routing-helper.cc	/^LSRoutingHelper::LSRoutingHelper () { m_lsFactory.SetTypeId ("LSRoutingProtocol"); }$/;"	f	class:LSRoutingHelper
 LSRoutingHelper	ls-routing-helper.cc	/^LSRoutingHelper::LSRoutingHelper (const LSRoutingHelper &o) : m_lsFactory (o.m_lsFactory) {}$/;"	f	class:LSRoutingHelper
 LSRoutingHelper	ls-routing-helper.h	/^class LSRoutingHelper : public Ipv4RoutingHelper$/;"	c
-LSRoutingProtocol	ls-routing-protocol.cc	/^LSRoutingProtocol::LSRoutingProtocol()$/;"	f	class:LSRoutingProtocol
+LSRoutingProtocol	ls-routing-protocol.cc	/^LSRoutingProtocol::LSRoutingProtocol() $/;"	f	class:LSRoutingProtocol
 LSRoutingProtocol	ls-routing-protocol.cc	/^NS_OBJECT_ENSURE_REGISTERED(LSRoutingProtocol);$/;"	v
 LSRoutingProtocol	ls-routing-protocol.h	/^class LSRoutingProtocol : public PennRoutingProtocol$/;"	c
-LS_MAX_SEQUENCE_NUMBER	ls-routing-protocol.cc	41;"	d	file:
+LS_MAX_SEQUENCE_NUMBER	ls-routing-protocol.cc	43;"	d	file:
 LS_MESSAGE_H	ls-message.h	18;"	d
-LS_PORT_NUMBER	ls-routing-protocol.cc	42;"	d	file:
+LS_PORT_NUMBER	ls-routing-protocol.cc	44;"	d	file:
 LS_ROUTING_H	ls-routing-protocol.h	18;"	d
 LS_ROUTING_HELPER_H	ls-routing-helper.h	20;"	d
 MessageType	ls-message.h	/^    enum MessageType$/;"	g	class:LSMessage
@@ -67,6 +73,7 @@ Print	ls-message.cc	/^LSMessage::PingRsp::Print (std::ostream &os) const$/;"	f	c
 Print	ls-message.cc	/^LSMessage::Print (std::ostream &os) const$/;"	f	class:LSMessage
 PrintRoutingTable	ls-routing-protocol.cc	/^void LSRoutingProtocol::PrintRoutingTable(Ptr<OutputStreamWrapper> stream, Time::Unit unit) const$/;"	f	class:LSRoutingProtocol
 ProcessCommand	ls-routing-protocol.cc	/^void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)$/;"	f	class:LSRoutingProtocol
+ProcessHR	ls-routing-protocol.cc	/^void LSRoutingProtocol::ProcessHR(const LSMessage& lsaMsg,Ipv4Address originAddress,Ipv4Address interfaceAddress){$/;"	f	class:LSRoutingProtocol
 ProcessLSA	ls-routing-protocol.cc	/^void LSRoutingProtocol::ProcessLSA(const LSMessage & lsaMessage){$/;"	f	class:LSRoutingProtocol
 ProcessPingReq	ls-routing-protocol.cc	/^void LSRoutingProtocol::ProcessPingReq(LSMessage lsMessage)$/;"	f	class:LSRoutingProtocol
 ProcessPingRsp	ls-routing-protocol.cc	/^void LSRoutingProtocol::ProcessPingRsp(LSMessage lsMessage)$/;"	f	class:LSRoutingProtocol
@@ -97,9 +104,12 @@ address	ls-routing-protocol.h	/^    Ipv4Address address;$/;"	m	struct:LSRoutingP
 cost	ls-routing-protocol.h	/^	  uint32_t cost; \/\/ COST : $/;"	m	struct:LSRoutingProtocol::RouteEntry
 destinationAddress	ls-message.h	/^      Ipv4Address destinationAddress;$/;"	m	struct:LSMessage::PingReq
 destinationAddress	ls-message.h	/^      Ipv4Address destinationAddress;$/;"	m	struct:LSMessage::PingRsp
+hr	ls-message.h	/^      HRInfo hr;$/;"	m	struct:LSMessage::__anon1
 interfaceAddress	ls-routing-protocol.h	/^    Ipv4Address interfaceAddress;$/;"	m	struct:LSRoutingProtocol::Neighbor
-lastHello	ls-routing-protocol.h	/^    Time lastHello;$/;"	m	struct:LSRoutingProtocol::Neighbor
+lastHello	ls-routing-protocol.h	/^    Timer lastHello;$/;"	m	struct:LSRoutingProtocol::Neighbor
 lsa	ls-message.h	/^      LSAInfo lsa;$/;"	m	struct:LSMessage::__anon1
+m_HRTimeout	ls-routing-protocol.h	/^  Time m_HRTimeout;$/;"	m	class:LSRoutingProtocol
+m_HRTimer	ls-routing-protocol.h	/^  Timer m_HRTimer;  \/\/ Hello requset timer;$/;"	m	class:LSRoutingProtocol
 m_addressNodeMap	ls-routing-protocol.h	/^  std::map<Ipv4Address, uint32_t> m_addressNodeMap;$/;"	m	class:LSRoutingProtocol
 m_auditPingsTimer	ls-routing-protocol.h	/^  Timer m_auditPingsTimer;$/;"	m	class:LSRoutingProtocol
 m_currentSequenceNumber	ls-routing-protocol.h	/^  uint32_t m_currentSequenceNumber;$/;"	m	class:LSRoutingProtocol
@@ -109,7 +119,7 @@ m_lsFactory	ls-routing-helper.h	/^  ObjectFactory m_lsFactory;$/;"	m	class:LSRou
 m_lsPort	ls-routing-protocol.h	/^  uint16_t m_lsPort;$/;"	m	class:LSRoutingProtocol
 m_mainAddress	ls-routing-protocol.h	/^  Ipv4Address m_mainAddress;$/;"	m	class:LSRoutingProtocol
 m_maxTTL	ls-routing-protocol.h	/^  uint8_t m_maxTTL;$/;"	m	class:LSRoutingProtocol
-m_message	ls-message.h	/^     } m_message;$/;"	m	class:LSMessage	typeref:struct:LSMessage::__anon1
+m_message	ls-message.h	/^     }m_message;$/;"	m	class:LSMessage	typeref:struct:LSMessage::__anon1
 m_messageType	ls-message.h	/^    MessageType m_messageType; \/\/ lsmsg.m_messageType $/;"	m	class:LSMessage
 m_neighbors	ls-routing-protocol.h	/^  std::map<Ipv4Address, Neighbor> m_neighbors;$/;"	m	class:LSRoutingProtocol
 m_nodeAddressMap	ls-routing-protocol.h	/^  std::map<uint32_t, Ipv4Address> m_nodeAddressMap;$/;"	m	class:LSRoutingProtocol
@@ -122,15 +132,19 @@ m_sequenceNumber	ls-message.h	/^    uint32_t m_sequenceNumber; \/\/ lsmsg.m_sequ
 m_socketAddresses	ls-routing-protocol.h	/^  std::map<Ptr<Socket>, Ipv4InterfaceAddress> m_socketAddresses;$/;"	m	class:LSRoutingProtocol
 m_staticRouting	ls-routing-protocol.h	/^  Ptr<Ipv4StaticRouting> m_staticRouting;$/;"	m	class:LSRoutingProtocol
 m_ttl	ls-message.h	/^    uint8_t m_ttl; \/\/ lsmsg.m_ttl$/;"	m	class:LSMessage
+msg	ls-message.h	/^	    std::string msg;$/;"	m	struct:LSMessage::HRInfo
 neighbors	ls-message.h	/^	    std::map<uint32_t,uint32_t> neighbors;$/;"	m	struct:LSMessage::LSAInfo
 nextHopAddr	ls-routing-protocol.h	/^	  Ipv4Address nextHopAddr; \/\/ NEXT HOP 'S ADDR$/;"	m	struct:LSRoutingProtocol::RouteEntry
 nextHopNode	ls-routing-protocol.h	/^	  uint32_t nextHopNode; \/\/ nextHopNode WHY INT?$/;"	m	struct:LSRoutingProtocol::RouteEntry
+node	ls-routing-protocol.h	/^    uint32_t node;$/;"	m	struct:LSRoutingProtocol::Neighbor
 operator <<	ls-message.h	/^operator<< (std::ostream& os, const LSMessage& message)$/;"	f
+originNode	ls-message.h	/^	    uint32_t originNode; \/\/### int32 NODE$/;"	m	struct:LSMessage::HRInfo
 originNode	ls-message.h	/^	    uint32_t originNode; \/\/### int32 NODE$/;"	m	struct:LSMessage::LSAInfo
 pingMessage	ls-message.h	/^      std::string pingMessage;$/;"	m	struct:LSMessage::PingReq
 pingMessage	ls-message.h	/^      std::string pingMessage;$/;"	m	struct:LSMessage::PingRsp
 pingReq	ls-message.h	/^      PingReq pingReq;$/;"	m	struct:LSMessage::__anon1
 pingRsp	ls-message.h	/^      PingRsp pingRsp;$/;"	m	struct:LSMessage::__anon1
+seq	ls-message.h	/^	    uint32_t seq; \/\/ ### int32 Seq$/;"	m	struct:LSMessage::HRInfo
 sequenceNumber	ls-message.h	/^	    uint32_t sequenceNumber; \/\/ ### int32 Seq$/;"	m	struct:LSMessage::LSAInfo
 ~LSMessage	ls-message.cc	/^LSMessage::~LSMessage () {}$/;"	f	class:LSMessage
 ~LSRoutingProtocol	ls-routing-protocol.cc	/^LSRoutingProtocol::~LSRoutingProtocol() {}$/;"	f	class:LSRoutingProtocol
