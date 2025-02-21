@@ -114,6 +114,7 @@ class LSMessage : public Header
      *  \returns TTL of the message
      */
     uint8_t GetTTL() const;
+    Ipv4Address GetSource();
 
   private:
     /**

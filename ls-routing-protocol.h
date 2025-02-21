@@ -101,8 +101,11 @@ public:
  // void checkNeighborTableEntry(); // for Dump routing table
 
 
-  // Periodic Audit
+  // Periodic Audit // auditPingsTImer 's callback function
   void AuditPings();
+
+  // Periodic Ping Find Neighbors // HRTimer 's callback function
+  void HRFunc();
 
   // From Ipv4RoutingProtocol
 
@@ -292,6 +295,7 @@ private:
   Ptr<Ipv4> m_ipv4;
 
   Time m_pingTimeout;
+  Time m_HRTimeout;
   uint8_t m_maxTTL;
   uint16_t m_lsPort;
   uint32_t m_currentSequenceNumber;

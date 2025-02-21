@@ -47,6 +47,11 @@ uint32_t LSMessage::LSAInfo::GetSerializedSize(void) const{
 		neighbors.size() * sizeof(uint32_t) * 2; // each neighbor need 8B 64bit  ===> in data / load
 }
 
+// GetSource IP
+Ipv4Address LSMessage::GetSource(){
+	return m_originatorAddress;
+}
+
 // ### implement Serialize LSA
 // ### this function may be a CALLBACK FUNCTION
 void LSMessage::LSAInfo::Serialize(Buffer::Iterator& start) const{
