@@ -14,12 +14,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "ns3/internet-module.h"
 #include "ns3/ls-routing-protocol.h"
 #include "ns3/double.h"
 #include "ns3/inet-socket-address.h"
 #include "ns3/ipv4-header.h"
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/ipv4-route.h"
+#include "ns3/ipv4.h"
 #include "ns3/log.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/simulator.h"
@@ -143,8 +145,7 @@ LSRoutingProtocol::ReverseLookup(Ipv4Address ipAddress)
 void LSRoutingProtocol::DoInitialize()
 {
 
-  if (m_mainAddress == Ipv4Address())
-  {
+  if (m_mainAddress == Ipv4Address()){ // if m_mainAddres = 0.0.0.0
     Ipv4Address loopback("127.0.0.1");
     for (uint32_t i = 0; i < m_ipv4->GetNInterfaces(); i++)
     {
@@ -284,7 +285,6 @@ void LSRoutingProtocol::BroadcastPacket(Ptr<Packet> packet)
 //
 void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
 {
-	//
   std::vector<std::string>::iterator iterator = tokens.begin();
   std::string command = *iterator;
 
@@ -302,6 +302,7 @@ void LSRoutingProtocol::ProcessCommand(std::vector<std::string> tokens)
     iterator++;
     std::string pingMessage = *iterator;
     Ipv4Address destAddress = ResolveNodeIpAddress(nodeNumber);
+    DEBUG_LOG("Here!");
     if (destAddress != Ipv4Address::GetAny())
     {
       uint32_t sequenceNumber = GetNextSequenceNumber();
@@ -416,10 +417,11 @@ routing table entry. The output format is indicated by parameter name and type.
 }
 
 
+// Receive LSMessage and process
 void LSRoutingProtocol::RecvLSMessage(Ptr<Socket> socket)
 {
-  Address sourceAddr;
-  Ptr<Packet> packet = socket->RecvFrom(sourceAddr);
+  Address sourceAddr; 
+  Ptr<Packet> packet = socket->RecvFrom(sourceAddr); // sourceAddr will be assign value by Callback function
   LSMessage lsMessage;
   Ipv4PacketInfoTag interfaceInfo;
   if (!packet->RemovePacketTag(interfaceInfo))
@@ -433,7 +435,9 @@ void LSRoutingProtocol::RecvLSMessage(Ptr<Socket> socket)
     NS_ABORT_MSG("No incoming interface on LS message, aborting.");
   }
 
-  Ipv4Address interface;
+  Ipv4Address sourceIPv4Addr = InetSocketAddress::ConvertForm(sourceAddr).GetIpv4(); // 1.ConvertForm 2.GetIPv4(It can GetPort also ) || TURN sourceAddr => sourceIPV4Addr
+  Ipv4Address interface; // the IP of receive interface on device
+
   uint32_t idx = 1;
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::iterator iter = m_socketAddresses.begin();
        iter != m_socketAddresses.end(); iter++)
@@ -456,37 +460,33 @@ void LSRoutingProtocol::RecvLSMessage(Ptr<Socket> socket)
     ProcessPingRsp(lsMessage);
     break;
 
-
-
-
-
-
-
-
-
-
-
-    //### update RECVLSMESSAGE 
+  case LSMessage::HR:
+    ProcessHR(lsMessage,sourceIPv4Addr,interface); // Params: LSMsg , originAddress,interfaceAddress
+    break;
+    //code add
   case LSMessage::LSA:
-    //### if message is LSA 
-    ProcessLSA(lsMessage); // ### ProcessLSA logic , wait for implement
-    //printf("wait to implement PROCESSLSA METHOD LOGIC"); 
+    ProcessLSA(lsMessage); 
     break; 
-
-
-
-
-
-
-
-
-
-
 
   default:
     ERROR_LOG("Unknown Message Type!");
     break;
   }
+}
+
+//Edit: ProcessHR, receive 
+void LSRoutingProtocol::ProcessHR(const LSMessage& lsaMsg,Ipv4Address originAddress,Ipv4Address interfaceAddress){
+	//1. get HR info
+	LSMessage::HRInfo hr = lsaMsg.GetHR();
+
+	// new a Neighbor object and assign val
+	Neighbor neighbor;
+	neighbor.node = hr.originNode;
+	neighbor.address= originAddress;
+	neighbor.interfaceAddress = interfaceAddress; // how to get the into IP of LS
+
+	// add neighbor to m_neighbors Map
+	m_neighbors[originAddress]=neighbor; // Map<IP,Neighbor> IP:originAddress  Neighbor:this neighbor obj
 }
 
 // ### LETS SET PROCESSLSA  function HERE 
@@ -590,8 +590,10 @@ void LSRoutingProtocol::RunDijkstra(){
 void LSRoutingProtocol::ProcessPingReq(LSMessage lsMessage)
 {
   // Check destination address
+  std::cout << lsMessage;
   if (IsOwnAddress(lsMessage.GetPingReq().destinationAddress))
   {
+	  std::cout << "here";
     // Use reverse lookup for ease of debug
     std::string fromNode = ReverseLookup(lsMessage.GetOriginatorAddress());
     TRAFFIC_LOG("Received PING_REQ, From Node: " << fromNode

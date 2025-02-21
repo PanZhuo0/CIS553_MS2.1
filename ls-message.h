@@ -21,7 +21,7 @@
 #include "ns3/ipv4-address.h"
 #include "ns3/object.h"
 #include "ns3/packet.h"
-
+#include "string"
 
 using namespace ns3;
 
@@ -30,9 +30,7 @@ using namespace ns3;
 class LSMessage : public Header
 {
   public:
-
     LSMessage();
-
     virtual ~LSMessage();
 
     // TODO: Define extra message types in enum when needed
@@ -40,17 +38,31 @@ class LSMessage : public Header
       {
 	      PING_REQ,
 	      PING_RSP,
+	      HR,
 	      LSA   // LSA MSG TYPE used to implement LS algorihm
       };
 
     LSMessage(LSMessage::MessageType messageType, uint32_t sequenceNumber, uint8_t ttl, Ipv4Address originatorAddress);
+
+    //HR MSG structure
+    struct HRInfo{
+	    uint32_t originNode; //### int32 NODE
+	    uint32_t seq; // ### int32 Seq
+	    std::string msg;
+
+	    //### define serialized method in LSAINFO structure 
+	    void Print(std::ostream& os) const; // wait for implement
+	    uint32_t GetSerializedSize(void) const; // return SerializedSize wait for implement
+	    void Serialize(Buffer::Iterator& start) const; // serilize function wait for implement
+	    uint32_t Deserialize(Buffer::Iterator& start); // Deserilize
+    };
+
     //LSAInfo MSG structure
     struct LSAInfo{
 	    uint32_t originNode; //### int32 NODE
 	    uint32_t sequenceNumber; // ### int32 Seq
 	    //### along with LS node self's neighbors node and cost MAP 
 	    std::map<uint32_t,uint32_t> neighbors;
-
 
 	    //### define serialized method in LSAINFO structure 
 	    void Print(std::ostream& os) const; // wait for implement
@@ -145,13 +157,17 @@ class LSMessage : public Header
       std::string pingMessage;
      };
 
+
   private:
+
     struct
      {
       PingReq pingReq;
       PingRsp pingRsp;
+      //New
       LSAInfo lsa;
-     } m_message;
+      HRInfo hr;
+     }m_message;
 
 
   public:
@@ -159,6 +175,10 @@ class LSMessage : public Header
     void SetLSA(uint32_t originNode,uint32_t sequenceNumber, const std::map <uint32_t,uint32_t>& neighbors); // ### wait for implement
     //### ETLSA info 
     LSAInfo GetLSA() const; // ### waif for implement
+
+
+    void SetHR(uint32_t originNode,uint32_t seq,std::string msg);
+    HRInfo GetHR() const;
 
 
     /**

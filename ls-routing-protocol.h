@@ -17,9 +17,9 @@
 #ifndef LS_ROUTING_H
 #define LS_ROUTING_H
 
+#include "ns3/ipv4.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4-static-routing.h"
-#include "ns3/ipv4.h"
 #include "ns3/node.h"
 #include "ns3/object.h"
 #include "ns3/packet.h"
@@ -263,9 +263,10 @@ private:
 
 
   struct Neighbor {
+    uint32_t node;
     Ipv4Address address;
     Ipv4Address interfaceAddress;
-    Time lastHello;
+    Timer lastHello;
   };
 
   std::map<Ipv4Address, Neighbor> m_neighbors;
@@ -274,6 +275,8 @@ private:
   // ### routeing table store routing info
   std::map<uint32_t,RouteEntry> m_routingTable;
 
+  // ### hello request
+  void ProcessHR(const LSMessage& lsaMsg,Ipv4Address originAddress,Ipv4Address interfaceAddress);
 
   // ### NEW INTEFEACE WAIT FOR IMPLEMENT
   void FloodLSA(const LSMessage & lsaMessage);
@@ -297,6 +300,7 @@ private:
 
   // Timers
   Timer m_auditPingsTimer;
+  Timer m_HRTimer;  // Hello requset timer;
 
   // Ping tracker
   std::map<uint32_t, Ptr<PingRequest>> m_pingTracker;

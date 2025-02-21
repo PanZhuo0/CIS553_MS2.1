@@ -35,7 +35,11 @@ LSMessage::LSMessage (LSMessage::MessageType messageType, uint32_t sequenceNumbe
   m_originatorAddress = originatorAddress;
 }
 
-// ### implement LSAINFO  SERILIZE 
+uint32_t LSMessage::HRInfo::GetSerializedSize(void) const{
+	return sizeof(uint32_t) * 2 +  // original IP + Seq = 4*2=8B
+		msg.size();	// Len of Msg
+}
+
 uint32_t LSMessage::LSAInfo::GetSerializedSize(void) const{
 	return sizeof(uint32_t)  * 2 	+  // origin Node + SEQ number need 32bit each 	===> in header
 		sizeof(uint32_t)  	+  // Neighbor number need 32bit		===> in header
@@ -90,8 +94,9 @@ LSMessage::LSAInfo LSMessage::GetLSA() const{
 	return m_message.lsa;
 }
 
-
-
+LSMessage::HRInfo LSMessage::GetHR() const{
+	return m_message.hr;
+}
 
 TypeId
 LSMessage::GetTypeId (void)
@@ -166,6 +171,7 @@ LSMessage::Serialize (Buffer::Iterator start) const
     case PING_RSP:
       m_message.pingRsp.Serialize (i);
       break;
+
     default:
       NS_ASSERT (false);
     }
